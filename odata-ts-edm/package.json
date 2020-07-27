@@ -1,17 +1,24 @@
 {
-  "name": "microsoft.odata.ts.edm",
+  "name": "odata-ts-edm",
   "version": "0.0.1",
   "description": "Class hierarchy to represents EDM models",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "run": "ts-node src/index"
+    "test": "mocha -r ts-node/register tests/**/*.spec.ts"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@types/node": "^14.0.26"
+    "@types/node": "^14.0.26",
+    "typescript": "^3.9.7"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@types/node": "^14.0.26",
+    "@types/chai": "^4.2.12",
+    "@types/mocha": "^8.0.0",
+    "chai": "^4.2.0",
+    "mocha": "^8.0.1",
+    "ts-node": "^8.10.2"
+  }
 }

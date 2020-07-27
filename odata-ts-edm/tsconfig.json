@@ -16,6 +16,9 @@
     "alwaysStrict": true,
     "strictNullChecks": true
   },
-  "include": ["src/**/*"],
+  "include": [
+    "src/**/*",
+    "test/test.ts"
+  ],
   "compileOnSave": true
 }

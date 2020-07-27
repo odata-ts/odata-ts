@@ -17,6 +17,6 @@ function createSample(): Schema {
   return s;
 }
 
-const sample = createSample();
+// const sample = createSample();
 
-CsdlWriter.write(sample, "schema.xml");
+// CsdlWriter.write(sample, "schema.xml");
