@@ -1,4 +1,4 @@
-import { EntityType, Schema, ComplexType, Property } from "./model";
+import { Model, Schema, EntityType, ComplexType, Property, ModelReference, ModelInclude } from "./model";
 import { CsdlSerializer } from "./csdlSerializer";
 import { XmlWriter } from "./xmlwriter"
 
@@ -7,8 +7,12 @@ var serializer = new CsdlSerializer(new XmlWriter("schema.csdl.xsml"))
 serializer.write(createSample());
 
 
-function createSample(): Schema {
-  let s = new Schema("rapid");
+function createSample(): Model {
+  let m = new Model();
+
+  // m.references.push(new ModelReference("a", [new ModelInclude("foo.bar")]));
+
+  let s = new Schema(m, "rapid", "rapid");
   let a = new ComplexType("a", s);
   let p1 = new Property("p1", a, { type: a, isOptional: true });
 
@@ -20,5 +24,5 @@ function createSample(): Schema {
   let p4 = new Property("p4", c, { type: a });
   let p5 = new Property("p5", c, { type: a, isCollection: true });
 
-  return s;
+  return m;
 }

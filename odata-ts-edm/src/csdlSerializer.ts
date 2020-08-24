@@ -1,4 +1,5 @@
 import {
+  Model,
   Schema,
   ISchemaElement,
   StructuredType,
@@ -17,26 +18,35 @@ export class CsdlSerializer {
 
   constructor(readonly writer: XmlWriter) { }
 
-  public write(schema: Schema) {
-    this.writeEdmx(() => {
-      this.writeSchema(schema)
-    });
+
+  public write(model: Model) {
+    this.writeModel(model);
   }
 
-  private writeEdmx(body: () => void) {
+  private writeModel(model: Model) {
+    // TODO get namespace and alias
     this.writer.start("edmx:Edmx", { "xmlns:edmx": edmxNs, Version: "4.01" });
-    // this.writer.start("edmx:Reference", { Uri: "http://host/service/$metadata" });
-    // this.writer.empty("edmx:Include", { Namespace: "ODataDemo", Alias: "target" });
-    // this.writer.end();
+
+    for (const reference of model.references) {
+      this.writer.start("edmx:Reference", { Uri: reference.uri });
+      for (const include of reference.includes) {
+        this.writer.empty("edmx:Include", { Namespace: include.schema });
+      }
+      this.writer.end();
+    }
+
     this.writer.start("edmx:DataServices");
-    body()
+    for (const schema of model.schemas) {
+      this.writeSchema(schema);
+    }
     this.writer.end();
+
     this.writer.end();
   }
 
   private writeSchema(schema: Schema) {
     // TODO get namespace and alias
-    this.writer.start("Schema", { "xmlns": edmNs, Namespace: null, Alias: null });
+    this.writer.start("Schema", { "xmlns": edmNs, Alias: schema.alias, Namespace: schema.namespace });
 
     for (const element of schema.elements) {
       this.writeSchemaElement(element)

@@ -1,5 +1,30 @@
-const addPropertySymbol = Symbol("addProperty");
-const addItemSymbol = Symbol("addItem");
+import { Url } from "url";
+
+const addContainedElementSymbol = Symbol("addContainedElement");
+const addAssociatedElementSymbol = Symbol("addAssociatedElementSymbol");
+
+// https://tools.oasis-open.org/version-control/browse/wsvn/odata/trunk/spec/schemas/MetadataService.edmx
+
+export class Model {
+  constructor() { }
+
+  readonly schemas: Schema[] = [];
+
+  readonly references: ModelReference[] = [];
+
+  [addContainedElementSymbol](schema: Schema) {
+    this.schemas.push(schema);
+  }
+}
+
+export class ModelReference {
+  constructor(readonly uri: string, readonly includes: ModelInclude[]) { }
+}
+
+export class ModelInclude {
+  constructor(readonly schema: string) { }
+}
+
 
 export interface ISchemaElementPattern<T> {
   StructuredType: (structured: StructuredType) => T;
@@ -11,17 +36,22 @@ export interface ISchemaElement {
 }
 
 export class Schema {
-  constructor(readonly name: string) {}
+  constructor(readonly model: Model, readonly name: string,
+    readonly alias: string | null = null,
+    readonly namespace: string | null = null
+  ) {
+    model[addContainedElementSymbol](this);
+  }
   readonly elements: ISchemaElement[] = [];
 
-  [addItemSymbol](item: ISchemaElement) {
+  [addContainedElementSymbol](item: ISchemaElement) {
     this.elements.push(item);
   }
 }
 
 export abstract class StructuredType implements ISchemaElement {
   constructor(readonly name: string, readonly schema: Schema) {
-    schema[addItemSymbol](this);
+    schema[addContainedElementSymbol](this);
   }
 
   matchElement<T>(pattern: ISchemaElementPattern<T>): T {
@@ -36,7 +66,7 @@ export abstract class StructuredType implements ISchemaElement {
 
   abstract get properties(): readonly Property[];
 
-  [addPropertySymbol](property: Property) {
+  [addContainedElementSymbol](property: Property) {
     this._properties.push(property);
   }
 
@@ -114,7 +144,7 @@ export class Property {
     readonly declaringType: StructuredType,
     readonly type: TypeReference
   ) {
-    this.declaringType[addPropertySymbol](this);
+    this.declaringType[addContainedElementSymbol](this);
   }
 }
 
