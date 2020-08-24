@@ -7,6 +7,7 @@ import {
   EntityType,
   Property,
   TypeReference,
+  EnumType,
 } from "./model";
 import { XmlWriter } from "./xmlwriter"
 
@@ -59,7 +60,21 @@ export class CsdlSerializer {
   private writeSchemaElement(element: ISchemaElement) {
     element.matchElement({
       StructuredType: (structured) => this.writeStructuredType(structured),
+      EnumType: (enumType) => this.writeEnumType(enumType),
     });
+  }
+
+  // http://docs.oasis-open.org/odata/odata-csdl-xml/v4.01/odata-csdl-xml-v4.01.html#sec_UnderlyingIntegerType
+
+  writeEnumType(enumType: EnumType): any {
+
+    this.writer.start("EnumType", { Name: enumType.name, UnderlyingType: enumType.underlyingType }) //TODO: IsFlags="true">
+
+    for (const member of enumType.members) {
+      this.writer.empty("Member", { Name: member.name, Value: member.value });
+    }
+
+    this.writer.end();
   }
 
   // dispatch on the two structured types

@@ -1,4 +1,4 @@
-import { Model, Schema, EntityType, ComplexType, Property, ModelReference, ModelInclude } from "./model";
+import { Model, Schema, EntityType, ComplexType, Property, ModelReference, ModelInclude, EnumType } from "./model";
 import { CsdlSerializer } from "./csdlSerializer";
 import { XmlWriter } from "./xmlwriter"
 
@@ -23,6 +23,9 @@ function createSample(): Model {
   let c = new EntityType("c", s);
   let p4 = new Property("p4", c, { type: a });
   let p5 = new Property("p5", c, { type: a, isCollection: true });
+
+  let d = new EnumType("d", s, [{ name: "red" }, { name: "red" }]);
+
 
   return m;
 }

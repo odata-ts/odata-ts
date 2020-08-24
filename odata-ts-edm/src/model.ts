@@ -28,6 +28,7 @@ export class ModelInclude {
 
 export interface ISchemaElementPattern<T> {
   StructuredType: (structured: StructuredType) => T;
+  EnumType: (enumType: EnumType) => T;
 }
 
 export interface ISchemaElement {
@@ -148,24 +149,25 @@ export class Property {
   }
 }
 
-// function convertToXml(schema: Schema): JSDOM {
-//   const [dom, document] = createRoot();
+export type EnumUnderlyingType = "Edm.Byte" | "Edm.SByte" | "Edm.Int16" | "Edm.Int32" | "Edm.Int64" | null
 
-//   const schemaElement = document.createElementNS(edm, "Schema", {});
-//   schemaElement.setAttribute("Name", schema.name);
-//   document.documentElement.children[0].appendChild(schemaElement);
+export class EnumType implements ISchemaElement {
+  constructor(
+    readonly name: string,
+    readonly schema: Schema,
+    readonly members: EnumMember[],
+    readonly underlyingType: EnumUnderlyingType = null
+  ) {
+    schema[addContainedElementSymbol](this);
+  }
 
-//   return dom;
-// }
+  matchElement<T>(pattern: ISchemaElementPattern<T>): T {
+    return pattern.EnumType(this);
+  }
+}
 
-// function createRoot(): [JSDOM, Document] {
-//   const dom = new JSDOM(
-//     `<edmx:Edmx xmlns:edmx="${edmx}"><edmx:DataServices></edmx:DataServices></edmx:Edmx>`,
-//     {
-//       contentType: "text/xml",
-//     }
-//   );
-//   const document = dom.window.document;
+export interface EnumMember {
+  readonly name: string;
+  readonly value?: number | null;
+}
 
-//   return [dom, document];
-// }
