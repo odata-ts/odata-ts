@@ -1,5 +1,11 @@
 import { EntityType, Schema, ComplexType, Property } from "./model";
-import { CsdlWriter } from "./csdlwriter";
+import { CsdlSerializer } from "./csdlSerializer";
+import { XmlWriter } from "./xmlwriter"
+
+
+var serializer = new CsdlSerializer(new XmlWriter("schema.csdl.xsml"))
+serializer.write(createSample());
+
 
 function createSample(): Schema {
   let s = new Schema("rapid");
@@ -16,7 +22,3 @@ function createSample(): Schema {
 
   return s;
 }
-
-// const sample = createSample();
-
-// CsdlWriter.write(sample, "schema.xml");

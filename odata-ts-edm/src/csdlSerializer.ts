@@ -7,52 +7,52 @@ import {
   Property,
   TypeReference,
 } from "./model";
-import { XmlWriter } from "./xmlwriter";
+import { XmlWriter } from "./xmlwriter"
 
-const edmx = "http://docs.oasis-open.org/odata/ns/edmx";
-const edm = "http://docs.oasis-open.org/odata/ns/edm";
+const edmxNs = "http://docs.oasis-open.org/odata/ns/edmx";
+const edmNs = "http://docs.oasis-open.org/odata/ns/edm";
 
-export class CsdlWriter {
-  static write(schema: Schema, path: string) {
-    var writer = new CsdlWriter(new XmlWriter(path));
-    try {
-      writer.writeEnvelope(schema);
-    } catch (e) {
-    } finally {
-      writer.close();
-    }
-  }
 
-  constructor(readonly writer: XmlWriter) {}
+export class CsdlSerializer {
 
-  private close() {
-    this.writer.close();
-  }
+  constructor(readonly writer: XmlWriter) { }
 
-  private writeEnvelope(schema: Schema) {
-    this.writer.start("edmx:Edmx", { "xmlns:edmx": edmx, Version: "4.01" });
-    // this.writer.start("edmx:Reference", { Uri: "http://host/service/$metadata" });
-    // this.writer.start( "edmx:Include", { Namespace: "ODataDemo", Alias: "target" }, true);
-    // this.writer.end();
-
-    this.writer.start("edmx:DataServices");
-    this.writer.start("Schema", {
-      xmlns: edm,
-      Namespace: schema.name,
-      //   Alias: "self",
+  public write(schema: Schema) {
+    this.writeEdmx(() => {
+      this.writeSchema(schema)
     });
-    for (const item of schema.elements) {
-      this.writeSchemaElement(item);
-    }
-    this.writer.end("edmx:Edmx");
   }
 
+  private writeEdmx(body: () => void) {
+    this.writer.start("edmx:Edmx", { "xmlns:edmx": edmxNs, Version: "4.01" });
+    // this.writer.start("edmx:Reference", { Uri: "http://host/service/$metadata" });
+    // this.writer.empty("edmx:Include", { Namespace: "ODataDemo", Alias: "target" });
+    // this.writer.end();
+    this.writer.start("edmx:DataServices");
+    body()
+    this.writer.end();
+    this.writer.end();
+  }
+
+  private writeSchema(schema: Schema) {
+    // TODO get namespace and alias
+    this.writer.start("Schema", { "xmlns": edmNs, Namespace: null, Alias: null });
+
+    for (const element of schema.elements) {
+      this.writeSchemaElement(element)
+    }
+
+    this.writer.end();
+  }
+
+  // dispatch on various types of schema elements
   private writeSchemaElement(element: ISchemaElement) {
     element.matchElement({
       StructuredType: (structured) => this.writeStructuredType(structured),
     });
   }
 
+  // dispatch on the two structured types
   private writeStructuredType(structured: StructuredType) {
     structured.match({
       EntityType: (entity) => this.writeEntityType(entity),
@@ -65,9 +65,11 @@ export class CsdlWriter {
       Name: entity.name,
       BaseType: entity.baseType?.name ?? null,
     });
+
     for (const property of entity.declaredProperties) {
       this.writeProperty(property);
     }
+
     this.writer.end();
   }
 
@@ -76,23 +78,27 @@ export class CsdlWriter {
       Name: complex.name,
       BaseType: complex.baseType?.name ?? null,
     });
+
     for (const property of complex.declaredProperties) {
       this.writeProperty(property);
     }
+
     this.writer.end();
   }
+
   private writeProperty(property: Property) {
-    this.writer.startend("Property", {
+    this.writer.empty("Property", {
       Name: property.name,
-      Type: this.typeRef(property.type),
+      Type: this.getTypeRef(property.type),
       Optional: property.type.isOptional,
     });
   }
-  private typeRef(type: TypeReference) {
-    if (type.isCollection) {
-      return `Collection(${type.type.name})`;
+
+  private getTypeRef(ref: TypeReference) {
+    if (ref.isCollection) {
+      return `Collection(${ref.type.name})`;
     } else {
-      return type.type.name;
+      return ref.type.name;
     }
   }
 }
