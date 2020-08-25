@@ -1,28 +1,19 @@
 import {
   Model,
-  Schema,
-  ISchemaElement,
-  StructuredType,
-  ComplexType,
-  EntityType,
-  Property,
+  Schema, ISchemaElement, StructuredType, ComplexType, EntityType, Property, EnumType,
   TypeReference,
-  EnumType,
-  EntityContainer
+  EntityContainer, IContainerElement, EntitySet, Singleton
 } from "./models";
 import { XmlWriter } from "./xmlwriter"
 
 const edmxNs = "http://docs.oasis-open.org/odata/ns/edmx";
 const edmNs = "http://docs.oasis-open.org/odata/ns/edm";
 
-
 // http://docs.oasis-open.org/odata/odata-csdl-xml/v4.01/odata-csdl-xml-v4.01.html
-
 
 export class CsdlSerializer {
 
   constructor(readonly writer: XmlWriter) { }
-
 
   public write(model: Model) {
     this.writeModel(model);
@@ -49,6 +40,9 @@ export class CsdlSerializer {
     this.writer.end();
   }
 
+  // ------------------------------
+  // schema
+
   private writeSchema(schema: Schema) {
     // TODO get namespace and alias
     this.writer.start("Schema", { "xmlns": edmNs, Alias: schema.alias, Namespace: schema.namespace });
@@ -57,13 +51,8 @@ export class CsdlSerializer {
       this.writeSchemaElement(element)
     }
 
-    this.writeSchemaContainer(schema.container);
+    this.writeContainer(schema.container);
 
-    this.writer.end();
-  }
-
-  private writeSchemaContainer(container: EntityContainer) {
-    this.writer.start("EntityContainer", { Name: container.name });
     this.writer.end();
   }
 
@@ -127,6 +116,50 @@ export class CsdlSerializer {
       Optional: property.type.isOptional,
     });
   }
+
+  // ------------------------------
+  // containers
+  private writeContainer(container: EntityContainer) {
+    this.writer.start("EntityContainer", { Name: container.name });
+
+    for (const element of container.elements) {
+      this.writeContainerElement(element)
+    }
+
+    this.writer.end();
+  }
+
+  private writeContainerElement(element: IContainerElement) {
+    element.matchElement({
+      EntitySet: (entitySet) => this.writeEntitySet(entitySet),
+      Singleton: (singleton) => this.writeSingleton(singleton),
+    });
+  }
+
+  writeSingleton(singleton: Singleton): any {
+    this.writer.start("Singleton", {
+      Name: singleton.name,
+      BaseType: singleton.entityType.name,
+    });
+
+    // TODO: write bindings
+
+    this.writer.end();
+  }
+
+  writeEntitySet(entitySet: EntitySet): any {
+    this.writer.start("EntitySet", {
+      Name: entitySet.name,
+      BaseType: entitySet.entityType.name,
+    });
+
+    // TODO: write bindings
+
+    this.writer.end();
+  }
+
+  // ------------------------------
+  // type references
 
   private getTypeRef(ref: TypeReference) {
     if (ref.isCollection) {

@@ -1,13 +1,17 @@
-import { Url } from "url";
+// https://issues.oasis-open.org/browse/ODATA-126
+// https://tools.oasis-open.org/version-control/browse/wsvn/odata/trunk/spec/schemas/MetadataService.edmx
 
+// -------------
+// symbols for  events to wire up bi-directional references
 const addElementToSchema = Symbol("addElementToSchema");
 const addSchemaToModel = Symbol("addSchemaToModel");
 const addReferenceToModel = Symbol("addReferenceToModel");
 const addPropertyToType = Symbol("addPropertyToType");
 const setSchemaOfContainer = Symbol("setSchemaOfContainer");
+const addElementToContainer = Symbol("setContainerOfElement");
 
-// https://issues.oasis-open.org/browse/ODATA-126
-// https://tools.oasis-open.org/version-control/browse/wsvn/odata/trunk/spec/schemas/MetadataService.edmx
+// -------------
+// top level EDMX  model 
 
 export class Model {
   constructor() { }
@@ -33,16 +37,8 @@ export class ModelInclude {
   constructor(readonly schema: string) { }
 }
 
-// Schema elements are a structured type (entity of complex), an enumType or functions (not yet implemented)
-export interface ISchemaElement {
-  readonly name: string;
-  matchElement<T>(pattern: ISchemaElementPattern<T>): T;
-}
-
-export interface ISchemaElementPattern<T> {
-  StructuredType: (structured: StructuredType) => T;
-  EnumType: (enumType: EnumType) => T;
-}
+// ---------------------------
+// schema
 
 export class Schema {
   constructor(readonly model: Model, readonly namespace: string,
@@ -62,6 +58,16 @@ export class Schema {
   }
 }
 
+export interface ISchemaElement {
+  readonly name: string;
+  matchElement<T>(pattern: ISchemaElementPattern<T>): T;
+}
+
+// Schema elements are a structured types (entity of complex), an enumType or functions (not yet implemented)
+export interface ISchemaElementPattern<T> {
+  StructuredType: (structured: StructuredType) => T;
+  EnumType: (enumType: EnumType) => T;
+}
 
 export abstract class StructuredType implements ISchemaElement {
   constructor(readonly name: string, readonly schema: Schema) {
@@ -188,13 +194,14 @@ export interface EnumMember {
 // container
 
 
-interface IContainerElement {
+export interface IContainerElement {
   readonly fullName: string;
-  matchElement<T>(pattern: ISchemaElementPattern<T>): T;
+  matchElement<T>(pattern: IContainerElementPattern<T>): T;
 }
 
 export interface IContainerElementPattern<T> {
-
+  Singleton(singleton: Singleton): T;
+  EntitySet(entitySet: EntitySet): T;
 }
 
 export class EntityContainer {
@@ -212,5 +219,35 @@ export class EntityContainer {
 
   [setSchemaOfContainer](schema: Schema) {
     this._schema = schema;
+  }
+
+  [addElementToContainer](item: IContainerElement) {
+    this.elements.push(item);
+  }
+}
+
+export class EntitySet implements IContainerElement {
+  constructor(readonly container: EntityContainer, readonly name: string, readonly entityType: EntityType) {
+    container[addElementToContainer](this);
+  }
+
+  public get fullName(): string { return `${this.container.qualifiedName}.${this.name}`; }
+
+  public matchElement<T>(pattern: IContainerElementPattern<T>): T {
+    return pattern.EntitySet(this);
+  }
+
+  // TODO: <NavigationProperty Name="NavigationPropertyBindings" Type="Collection(Meta.NavigationPropertyBinding)" Partner="Source"/>
+}
+
+export class Singleton implements IContainerElement {
+  constructor(readonly container: EntityContainer, readonly name: string, readonly entityType: EntityType) {
+    container[addElementToContainer](this);
+  }
+
+  public get fullName(): string { return `${this.container.qualifiedName}.${this.name}`; }
+
+  public matchElement<T>(pattern: IContainerElementPattern<T>): T {
+    return pattern.Singleton(this);
   }
 }
