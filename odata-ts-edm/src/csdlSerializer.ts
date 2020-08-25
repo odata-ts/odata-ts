@@ -1,10 +1,19 @@
 import {
   Model,
-  Schema, ISchemaElement, StructuredType, ComplexType, EntityType, Property, EnumType,
+  Schema,
+  ISchemaElement,
+  StructuredType,
+  ComplexType,
+  EntityType,
+  Property,
+  EnumType,
   TypeReference,
-  EntityContainer, IContainerElement, EntitySet, Singleton
+  EntityContainer,
+  IContainerElement,
+  EntitySet,
+  Singleton,
 } from "./models";
-import { XmlWriter } from "./xmlwriter"
+import { XmlWriter } from "./xmlwriter";
 
 const edmxNs = "http://docs.oasis-open.org/odata/ns/edmx";
 const edmNs = "http://docs.oasis-open.org/odata/ns/edm";
@@ -12,8 +21,17 @@ const edmNs = "http://docs.oasis-open.org/odata/ns/edm";
 // http://docs.oasis-open.org/odata/odata-csdl-xml/v4.01/odata-csdl-xml-v4.01.html
 
 export class CsdlSerializer {
+  constructor(writer: XmlWriter);
+  constructor(path: string);
+  constructor(writerOrPath: XmlWriter | string) {
+    if (writerOrPath instanceof XmlWriter) {
+      this.writer = writerOrPath;
+    } else {
+      this.writer = new XmlWriter(writerOrPath);
+    }
+  }
 
-  constructor(readonly writer: XmlWriter) { }
+  public readonly writer: XmlWriter;
 
   public write(model: Model) {
     this.writeModel(model);
@@ -45,10 +63,13 @@ export class CsdlSerializer {
 
   private writeSchema(schema: Schema) {
     // TODO get namespace and alias
-    this.writer.start("Schema", { "xmlns": edmNs, Alias: schema.alias, Namespace: schema.namespace });
+    this.writer.start(
+      "Schema",
+      { "xmlns": edmNs, Alias: schema.alias, Namespace: schema.namespace },
+    );
 
     for (const element of schema.elements) {
-      this.writeSchemaElement(element)
+      this.writeSchemaElement(element);
     }
 
     this.writeContainer(schema.container);
@@ -65,8 +86,10 @@ export class CsdlSerializer {
   }
 
   writeEnumType(enumType: EnumType): any {
-
-    this.writer.start("EnumType", { Name: enumType.name, UnderlyingType: enumType.underlyingType }) //TODO: IsFlags="true">
+    this.writer.start(
+      "EnumType",
+      { Name: enumType.name, UnderlyingType: enumType.underlyingType },
+    ); //TODO: IsFlags="true">
 
     for (const member of enumType.members) {
       this.writer.empty("Member", { Name: member.name, Value: member.value });
@@ -123,7 +146,7 @@ export class CsdlSerializer {
     this.writer.start("EntityContainer", { Name: container.name });
 
     for (const element of container.elements) {
-      this.writeContainerElement(element)
+      this.writeContainerElement(element);
     }
 
     this.writer.end();

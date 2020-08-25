@@ -1,11 +1,14 @@
-import { Model, Schema, EntityType, ComplexType, Property, ModelReference, ModelInclude, EnumType, EntitySet } from "./models";
-import { CsdlSerializer } from "./csdlSerializer";
-import { XmlWriter } from "./xmlwriter"
+import {
+  Model,
+  Schema,
+  EntityType,
+  ComplexType,
+  Property,
+  CsdlSerializer,
+} from "../../odata-ts-edm";
 
-
-var serializer = new CsdlSerializer(new XmlWriter("schema.csdl.xsml"))
+var serializer = new CsdlSerializer("schema.csdl.xml");
 serializer.write(createSample());
-
 
 function createSample(): Model {
   let m = new Model();
@@ -23,11 +26,6 @@ function createSample(): Model {
   let c = new EntityType("c", s);
   let p4 = new Property("p4", c, { type: a });
   let p5 = new Property("p5", c, { type: a, isCollection: true });
-
-  let d = new EnumType("d", s, [{ name: "red" }, { name: "red" }]);
-
-
-  let e = new EntitySet(s.container, "foo", c)
 
   return m;
 }
