@@ -8,11 +8,15 @@ import {
   Property,
   TypeReference,
   EnumType,
-} from "./model";
+  EntityContainer
+} from "./models";
 import { XmlWriter } from "./xmlwriter"
 
 const edmxNs = "http://docs.oasis-open.org/odata/ns/edmx";
 const edmNs = "http://docs.oasis-open.org/odata/ns/edm";
+
+
+// http://docs.oasis-open.org/odata/odata-csdl-xml/v4.01/odata-csdl-xml-v4.01.html
 
 
 export class CsdlSerializer {
@@ -53,6 +57,13 @@ export class CsdlSerializer {
       this.writeSchemaElement(element)
     }
 
+    this.writeSchemaContainer(schema.container);
+
+    this.writer.end();
+  }
+
+  private writeSchemaContainer(container: EntityContainer) {
+    this.writer.start("EntityContainer", { Name: container.name });
     this.writer.end();
   }
 
@@ -63,8 +74,6 @@ export class CsdlSerializer {
       EnumType: (enumType) => this.writeEnumType(enumType),
     });
   }
-
-  // http://docs.oasis-open.org/odata/odata-csdl-xml/v4.01/odata-csdl-xml-v4.01.html#sec_UnderlyingIntegerType
 
   writeEnumType(enumType: EnumType): any {
 

@@ -1,4 +1,4 @@
-import { Model, Schema, EntityType, ComplexType, Property, ModelReference, ModelInclude, EnumType } from "./model";
+import { Model, Schema, EntityType, ComplexType, Property, ModelReference, ModelInclude, EnumType } from "./models";
 import { CsdlSerializer } from "./csdlSerializer";
 import { XmlWriter } from "./xmlwriter"
 

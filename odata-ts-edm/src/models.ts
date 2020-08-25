@@ -1,8 +1,12 @@
 import { Url } from "url";
 
-const addContainedElementSymbol = Symbol("addContainedElement");
-const addAssociatedElementSymbol = Symbol("addAssociatedElementSymbol");
+const addElementToSchema = Symbol("addElementToSchema");
+const addSchemaToModel = Symbol("addSchemaToModel");
+const addReferenceToModel = Symbol("addReferenceToModel");
+const addPropertyToType = Symbol("addPropertyToType");
+const setSchemaOfContainer = Symbol("setSchemaOfContainer");
 
+// https://issues.oasis-open.org/browse/ODATA-126
 // https://tools.oasis-open.org/version-control/browse/wsvn/odata/trunk/spec/schemas/MetadataService.edmx
 
 export class Model {
@@ -12,8 +16,12 @@ export class Model {
 
   readonly references: ModelReference[] = [];
 
-  [addContainedElementSymbol](schema: Schema) {
+  [addSchemaToModel](schema: Schema) {
     this.schemas.push(schema);
+  }
+
+  [addReferenceToModel](reference: ModelReference) {
+    this.references.push(reference);
   }
 }
 
@@ -25,34 +33,39 @@ export class ModelInclude {
   constructor(readonly schema: string) { }
 }
 
+// Schema elements are a structured type (entity of complex), an enumType or functions (not yet implemented)
+export interface ISchemaElement {
+  readonly name: string;
+  matchElement<T>(pattern: ISchemaElementPattern<T>): T;
+}
 
 export interface ISchemaElementPattern<T> {
   StructuredType: (structured: StructuredType) => T;
   EnumType: (enumType: EnumType) => T;
 }
 
-export interface ISchemaElement {
-  readonly name: string;
-  matchElement<T>(pattern: ISchemaElementPattern<T>): T;
-}
-
 export class Schema {
-  constructor(readonly model: Model, readonly name: string,
-    readonly alias: string | null = null,
-    readonly namespace: string | null = null
+  constructor(readonly model: Model, readonly namespace: string,
+    readonly alias: string | null = null
   ) {
-    model[addContainedElementSymbol](this);
+    model[addSchemaToModel](this);
   }
   readonly elements: ISchemaElement[] = [];
 
-  [addContainedElementSymbol](item: ISchemaElement) {
+  private _container: EntityContainer = new EntityContainer(this, "default");
+
+  public get container() { return this._container; }
+  public set container(c: EntityContainer) { this._container = c; c[setSchemaOfContainer](this); }
+
+  [addElementToSchema](item: ISchemaElement) {
     this.elements.push(item);
   }
 }
 
+
 export abstract class StructuredType implements ISchemaElement {
   constructor(readonly name: string, readonly schema: Schema) {
-    schema[addContainedElementSymbol](this);
+    schema[addElementToSchema](this);
   }
 
   matchElement<T>(pattern: ISchemaElementPattern<T>): T {
@@ -67,7 +80,7 @@ export abstract class StructuredType implements ISchemaElement {
 
   abstract get properties(): readonly Property[];
 
-  [addContainedElementSymbol](property: Property) {
+  [addPropertyToType](property: Property) {
     this._properties.push(property);
   }
 
@@ -145,7 +158,7 @@ export class Property {
     readonly declaringType: StructuredType,
     readonly type: TypeReference
   ) {
-    this.declaringType[addContainedElementSymbol](this);
+    this.declaringType[addPropertyToType](this);
   }
 }
 
@@ -158,7 +171,7 @@ export class EnumType implements ISchemaElement {
     readonly members: EnumMember[],
     readonly underlyingType: EnumUnderlyingType = null
   ) {
-    schema[addContainedElementSymbol](this);
+    schema[addElementToSchema](this);
   }
 
   matchElement<T>(pattern: ISchemaElementPattern<T>): T {
@@ -171,3 +184,33 @@ export interface EnumMember {
   readonly value?: number | null;
 }
 
+// ---------------------------
+// container
+
+
+interface IContainerElement {
+  readonly fullName: string;
+  matchElement<T>(pattern: ISchemaElementPattern<T>): T;
+}
+
+export interface IContainerElementPattern<T> {
+
+}
+
+export class EntityContainer {
+  constructor(schema: Schema, readonly name: string) {
+    this._schema = schema;
+  }
+
+  readonly elements: IContainerElement[] = [];
+
+  private _schema: Schema;
+
+  private get schema(): Schema { return this._schema; }
+
+  public get qualifiedName(): string { return `${this.schema.namespace}.${this.name}`; }
+
+  [setSchemaOfContainer](schema: Schema) {
+    this._schema = schema;
+  }
+}
