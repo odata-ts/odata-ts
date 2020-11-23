@@ -31,7 +31,7 @@ let xml = `
 readCsdl(xml, (schema: edm.IEdmSchema) => {
   writeCsdl(schema, process.stdout);
 
-  for (const element of schema.elements) {
-    console.log(element.elementKind);
-  }
+  // for (const element of schema.elements) {
+  //   console.log(element.elementKind);
+  // }
 });
