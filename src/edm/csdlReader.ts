@@ -2,7 +2,7 @@ import { Parser } from "xml2js";
 import { model } from "./model";
 import { edm } from "./interfaces";
 
-export function parseCsdl(xml: string, cb: (schema: edm.IEdmSchema) => void) {
+export function readCsdl(xml: string, cb: (schema: edm.IEdmSchema) => void) {
   var parser = new Parser();
 
   parser.parseString(xml, (err: any, result: any) => {

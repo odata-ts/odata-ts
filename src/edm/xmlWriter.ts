@@ -26,15 +26,20 @@ export class XmlWriter {
     }
     this.stream.write(`<?xml version="1.0"?>${this.lf}`); // encoding="UTF-8" standalone="yes"
   }
+
   writeOpen(name: string, attributes?: Attributes) {
     let attr = attributes ? this.formatAttributes(attributes) : undefined;
-    this.writeIndented(`<${name}${attr ? " " + attr : ""}`);
+    this.writeIndented(`<${name}${attr ? " " + attr : ""}>`);
     this.stack.push(name);
   }
 
   writeElement(name: string, attributes?: Attributes) {
     let attr = attributes ? this.formatAttributes(attributes) : undefined;
     this.writeIndented(`<${name}${attr ? " " + attr : ""}/>`);
+  }
+
+  writeText(name: string, value: string) {
+    this.writeIndented(`<${name}>${value}</${name}>`);
   }
 
   writeClose(name: string) {
