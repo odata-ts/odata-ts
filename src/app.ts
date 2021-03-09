@@ -1,27 +1,29 @@
-#!/usr/bin/env node
-import process from "process";
-import { readFileSync } from "fs";
-import { edm, writeCsdl, writeValue, readCsdl, constant } from "./edm";
-import { DateTime } from "luxon";
+import { CsdlWriter, XmlWriter, model } from "./edm";
 
-const x: constant.IEdmBooleanValue = constant.booleanValue(true);
-const y = constant.integerValue(5);
-const z = constant.dateValue(DateTime.utc());
-const u = constant.recordValue([
-  { property: "A", value: x },
-  { property: "B", value: y },
-]);
+let ns = "example.com";
 
-const c = constant.collectionValue([x, y, z, u]);
+let schema = new model.EdmSchema(ns, "self");
 
-writeValue(c, process.stdout);
+let node = new model.EdmEntityType("node", schema, {
+  properties: [new model.EdmStructuralProperty("label", model.CoreModel.PrimitiveTypes.String)],
+});
 
-// const xml = readFileSync('./src/sample.csdl.xml', 'utf-8');
+let coord = new model.EdmComplexType("coord", schema, {
+  properties: [
+    new model.EdmStructuralProperty("lat", model.CoreModel.PrimitiveTypes.Integer),
+    new model.EdmStructuralProperty("lng", model.CoreModel.PrimitiveTypes.Integer),
+  ],
+});
 
-// readCsdl(xml, (schema: edm.IEdmSchema) => {
-//   writeCsdl(schema, process.stdout);
+schema.elements.push(node);
+schema.elements.push(coord);
 
-//   // for (const element of schema.elements) {
-//   //   console.log(element.elementKind);
-//   // }
-// });
+node.properties.push(
+  new model.EdmStructuralProperty("weight", model.CoreModel.PrimitiveTypes.Integer),
+  new model.EdmStructuralProperty("children", new model.EdmCollectionType(node)),
+  new model.EdmStructuralProperty("location", coord)
+);
+
+let w = new CsdlWriter(new XmlWriter(process.stdout));
+
+w.writeSchema(schema);
