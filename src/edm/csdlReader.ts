@@ -2,16 +2,16 @@ import { Parser } from "xml2js";
 import { model } from "./model";
 import { edm } from "./interfaces";
 
-export function readCsdl(xml: string, cb: (schema: edm.IEdmSchema) => void) {
+export function readCsdl(xml: string, cb: (schema: model.EdmSchema) => void) {
   var parser = new Parser();
 
   parser.parseString(xml, (err: any, result: any) => {
-    var schema: edm.IEdmSchema = makeSchema(result.Schema);
+    var schema: model.EdmSchema = makeSchema(result.Schema);
     cb(schema);
   });
 }
 
-export function makeSchema(xml: any): edm.IEdmSchema {
+export function makeSchema(xml: any): model.EdmSchema {
   var attr = xml.$;
   const schema = new model.EdmSchema(attr.Namespace, attr.Alias);
   const queue: [model.EdmSchemaElement, any][] = [];
