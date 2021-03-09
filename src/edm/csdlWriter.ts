@@ -35,7 +35,7 @@ export class CsdlWriter {
 
   writeSchemaElement(element: edm.IEdmSchemaElement) {
     switch (element.elementKind) {
-      case edm.EdmElementKind.Entity:
+      case "entity":
         const entity = element;
         this.writer.writeOpen("Entity", { Name: entity.name });
         for (const prop of entity.properties) {
@@ -46,7 +46,7 @@ export class CsdlWriter {
         }
         this.writer.writeClose("Entity");
         break;
-      case edm.EdmElementKind.Complex:
+      case "complex":
         const complex = element;
         this.writer.writeOpen("Complex", { Name: complex.name });
         for (const prop of complex.properties) {
@@ -57,7 +57,7 @@ export class CsdlWriter {
         }
         this.writer.writeClose("Complex");
         break;
-      case edm.EdmElementKind.Enum:
+      case "enum":
         const enumeration = element;
         this.writer.writeOpen("Enum", { Name: enumeration.name });
         for (const member of enumeration.members) {
@@ -137,14 +137,14 @@ export class CsdlWriter {
 
 function makeTypeName(type: edm.IEdmType): string {
   switch (type.typeKind) {
-    case edm.EdmTypeKind.Entity:
-    case edm.EdmTypeKind.Complex:
-    case edm.EdmTypeKind.Enum:
+    case "entity":
+    case "complex":
+    case "enum":
       const ns = type.schema.alias;
       return ns + "." + type.name;
-    case edm.EdmTypeKind.Collection:
+    case "collection":
       return `Collection(${makeTypeName(type.elementType)})`;
-    case edm.EdmTypeKind.Primitive:
+    case "primitive":
       return "Edm" + "." + type.name;
     default:
       return assertNever(type);

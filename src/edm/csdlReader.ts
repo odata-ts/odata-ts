@@ -55,13 +55,13 @@ function makeEnum(schema: edm.IEdmSchema, xml: any): model.EdmEnumType {
 
 function buildElement(schema: edm.IEdmSchema, element: model.EdmSchemaElement, xml: any): void {
   switch (element.elementKind) {
-    case edm.EdmElementKind.Entity:
-    case edm.EdmElementKind.Complex:
+    case "entity":
+    case "complex":
       for (const prop of xml.Property) {
         element.properties.push(makeProperty(schema, prop));
       }
       break;
-    case edm.EdmElementKind.Enum:
+    case "enum":
       for (const member of xml.Member) {
         element.members.push(makeMember(schema, member));
       }
@@ -105,8 +105,8 @@ function findType(schema: edm.IEdmSchema, name: string): edm.IEdmType | undefine
   // search in schema
   for (const element of schema.elements) {
     switch (element.elementKind) {
-      case edm.EdmElementKind.Entity:
-      case edm.EdmElementKind.Complex:
+      case "entity":
+      case "complex":
         if (schema.namespace + "." + element.name === name) {
           return element;
         }

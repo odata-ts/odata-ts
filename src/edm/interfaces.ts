@@ -1,29 +1,19 @@
 export namespace edm {
-  export enum EdmTypeKind {
-    Entity,
-    Complex,
-    Primitive,
-    Collection,
-    Enum,
-  }
-
   export type IEdmType = IEdmPrimitiveType | IEdmEntityType | IEdmComplexType | IEdmCollectionType | IEdmEnumType;
 
-  export enum EdmElementKind {
-    Entity,
-    Complex,
-    Enum,
-  }
+  export type EdmTypeKind = "entity" | "complex" | "primitive" | "collection" | "enum";
 
   export type IEdmSchemaElement = IEdmEntityType | IEdmComplexType | IEdmEnumType;
 
+  export type EdmElementKind = "entity" | "complex" | "enum";
+
   export type IEdmPrimitiveType = {
-    readonly typeKind: EdmTypeKind.Primitive;
+    readonly typeKind: "primitive";
     readonly name: string;
   };
 
   export type IEdmCollectionType = {
-    readonly typeKind: EdmTypeKind.Collection;
+    readonly typeKind: "collection";
     readonly elementType: IEdmType;
   };
 
@@ -33,24 +23,24 @@ export namespace edm {
   };
 
   export type IEdmEntityType = {
-    readonly typeKind: EdmTypeKind.Entity;
-    readonly elementKind: EdmElementKind.Entity;
+    readonly typeKind: "entity";
+    readonly elementKind: "entity";
     readonly schema: IEdmSchema;
     readonly name: string;
     readonly properties: readonly IEdmStructuralProperty[];
   };
 
   export type IEdmComplexType = {
-    readonly typeKind: EdmTypeKind.Complex;
-    readonly elementKind: EdmElementKind.Complex;
+    readonly typeKind: "complex";
+    readonly elementKind: "complex";
     readonly schema: IEdmSchema;
     readonly name: string;
     readonly properties: readonly IEdmStructuralProperty[];
   };
 
   export type IEdmEnumType = {
-    readonly typeKind: EdmTypeKind.Enum;
-    readonly elementKind: EdmElementKind.Enum;
+    readonly typeKind: "enum";
+    readonly elementKind: "enum";
     readonly schema: IEdmSchema;
     readonly name: string;
     readonly members: readonly IEdmEnumMember[];

@@ -3,20 +3,20 @@ import { edm } from "./interfaces";
 export namespace model {
   export class EdmPrimitiveType implements edm.IEdmPrimitiveType {
     constructor(readonly name: string) {}
-    typeKind: edm.EdmTypeKind.Primitive = edm.EdmTypeKind.Primitive;
+    typeKind: "primitive" = "primitive";
   }
 
   export class EdmCollectionType implements edm.IEdmCollectionType {
     constructor(readonly elementType: edm.IEdmType) {}
-    typeKind: edm.EdmTypeKind.Collection = edm.EdmTypeKind.Collection;
+    typeKind: "collection" = "collection";
   }
 
   export class EdmEntityType implements edm.IEdmEntityType {
     constructor(readonly name: string, readonly schema: edm.IEdmSchema, params?: Partial<Exclude<edm.IEdmEntityType, "name" | "schema">>) {
       this.properties = params?.properties?.slice() ?? [];
     }
-    elementKind: edm.EdmElementKind.Entity = edm.EdmElementKind.Entity;
-    typeKind: edm.EdmTypeKind.Entity = edm.EdmTypeKind.Entity;
+    elementKind: "entity" = "entity";
+    typeKind: "entity" = "entity";
     properties: edm.IEdmStructuralProperty[];
   }
 
@@ -24,8 +24,8 @@ export namespace model {
     constructor(readonly name: string, readonly schema: edm.IEdmSchema, params?: Partial<Exclude<edm.IEdmComplexType, "name" | "schema">>) {
       this.properties = params?.properties?.slice() ?? [];
     }
-    elementKind: edm.EdmElementKind.Complex = edm.EdmElementKind.Complex;
-    typeKind: edm.EdmTypeKind.Complex = edm.EdmTypeKind.Complex;
+    elementKind: "complex" = "complex";
+    typeKind: "complex" = "complex";
     properties: edm.IEdmStructuralProperty[];
   }
 
@@ -37,8 +37,8 @@ export namespace model {
     constructor(readonly name: string, readonly schema: edm.IEdmSchema, params?: Partial<Exclude<edm.IEdmEnumType, "name" | "schema">>) {
       this.members = params?.members?.slice() ?? [];
     }
-    elementKind: edm.EdmElementKind.Enum = edm.EdmElementKind.Enum;
-    typeKind: edm.EdmTypeKind.Enum = edm.EdmTypeKind.Enum;
+    elementKind: "enum" = "enum";
+    typeKind: "enum" = "enum";
     members: edm.IEdmEnumMember[];
   }
 
