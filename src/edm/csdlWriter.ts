@@ -45,6 +45,7 @@ export class CsdlWriter {
           });
         }
         this.writer.writeClose("Entity");
+
         break;
       case "complex":
         const complex = element;
