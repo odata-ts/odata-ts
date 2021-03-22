@@ -1,4 +1,4 @@
-import { CsdlWriter, XmlWriter, model } from "./edm";
+import { CsdlWriter, XmlWriter, model } from ".";
 
 let ns = "example.com";
 
