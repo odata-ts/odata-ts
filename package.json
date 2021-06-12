@@ -24,7 +24,8 @@
         "demo3": "ts-node ./src/demo3.ts",
         "create": "npm run build && npm run test",
         "build": "tsc -p .",
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "prepare": "npm run build"
     },
     "author": "",
     "license": "MIT"
